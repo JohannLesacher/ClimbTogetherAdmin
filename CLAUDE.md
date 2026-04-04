@@ -53,7 +53,6 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=   # Ex: mon-projet.firebasestorage.app (uti
 8. **shadcn/ui** comme base pour tous les composants UI. Ne pas réinventer ce qui existe.
 9. **`any` interdit.** Utiliser `unknown` ou des génériques stricts. Typer les réponses `fetch` explicitement.
 10. **Imports groupés :** react → next → libraries → local.
-11. **Sidebar sticky** : `sticky top-0 h-screen` sur `<aside>` dans le layout dashboard pour que le menu reste visible au scroll.
 
 ---
 

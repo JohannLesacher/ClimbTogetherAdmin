@@ -25,9 +25,10 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
+import { type FormState, type ParsedPreview, type SpotStyle, parseImportJson, buildFormPayload } from "@/lib/import-utils"
+
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type SpotStyle = "sport" | "trad" | "boulder"
 type ImportMode = "form" | "json"
 type Status = "idle" | "loading" | "success" | "error"
 
@@ -38,21 +39,6 @@ const STYLE_OPTIONS: { value: SpotStyle; label: string }[] = [
   { value: "trad", label: "Trad" },
   { value: "boulder", label: "Bloc" },
 ]
-
-type FormState = {
-  name: string
-  description: string
-  address: string
-  country: string
-  lat: string
-  lng: string
-  styles: SpotStyle[]
-  parkingLat: string
-  parkingLng: string
-  parkingNote: string
-  photoUrl: string
-  addedBy: string
-}
 
 const INITIAL_FORM: FormState = {
   name: "",
@@ -69,66 +55,7 @@ const INITIAL_FORM: FormState = {
   addedBy: "admin",
 }
 
-function buildFormPayload(form: FormState): Record<string, unknown> | null {
-  const lat = parseFloat(form.lat)
-  const lng = parseFloat(form.lng)
-  if (isNaN(lat) || isNaN(lng)) return null
-
-  const hasParking = form.parkingLat !== "" || form.parkingLng !== ""
-  const parkingLat = parseFloat(form.parkingLat)
-  const parkingLng = parseFloat(form.parkingLng)
-  if (hasParking && (isNaN(parkingLat) || isNaN(parkingLng))) return null
-
-  return {
-    data: [
-      {
-        name: form.name,
-        description: form.description,
-        location: { lat, lng, address: form.address, country: form.country },
-        styles: form.styles,
-        ...(hasParking && {
-          parking: {
-            lat: parkingLat,
-            lng: parkingLng,
-            ...(form.parkingNote && { note: form.parkingNote }),
-          },
-        }),
-        ...(form.photoUrl && { photoUrl: form.photoUrl }),
-        addedBy: form.addedBy || "admin",
-      },
-    ],
-  }
-}
-
 // ─── JSON mode ───────────────────────────────────────────────────────────────
-
-type ParsedPreview =
-  | { ok: true; count: number; sectorCount: number; raw: unknown }
-  | { ok: false; error: string }
-
-function parseImportJson(text: string): ParsedPreview {
-  try {
-    const json = JSON.parse(text) as Record<string, unknown>
-
-    // Accept both { data: [...] } and { exportedAt, count, data: [...] }
-    const data = json.data
-    if (!Array.isArray(data)) {
-      return { ok: false, error: 'Le JSON doit contenir une clé "data" avec un tableau.' }
-    }
-    if (data.length === 0) {
-      return { ok: false, error: "Le tableau data est vide." }
-    }
-
-    const sectorCount = data.reduce((acc: number, spot: unknown) => {
-      const s = spot as Record<string, unknown>
-      return acc + (Array.isArray(s.sectors) ? (s.sectors as unknown[]).length : 0)
-    }, 0)
-
-    return { ok: true, count: data.length, sectorCount, raw: json }
-  } catch {
-    return { ok: false, error: "JSON invalide. Vérifiez la syntaxe." }
-  }
-}
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
