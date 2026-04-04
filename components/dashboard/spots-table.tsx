@@ -211,7 +211,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
   return (
     <>
       {/* Toolbar */}
-      <div className="flex items-center justify-between gap-4 pb-3">
+      <div className="flex flex-col gap-2 pb-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           {selected.size > 0 ? (
             <>
@@ -230,7 +230,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
           )}
         </p>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 self-end sm:self-auto">
           <Button
             variant="outline"
             size="sm"

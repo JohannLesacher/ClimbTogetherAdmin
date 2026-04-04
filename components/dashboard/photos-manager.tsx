@@ -224,7 +224,7 @@ export function PhotosManager({ initialPhotos }: { initialPhotos: PhotoFile[] })
         <UploadZone onUploaded={() => router.refresh()} />
 
         {/* Toolbar */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
             {selected.size > 0 ? (
               <>

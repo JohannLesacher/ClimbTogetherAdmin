@@ -118,7 +118,7 @@ export function ExportTable<T extends { id: string }>({
     <>
       <div className="flex flex-col gap-3">
         {/* ── Toolbar ── */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted-foreground">
             {selected.size > 0 ? (
               <>
@@ -137,7 +137,7 @@ export function ExportTable<T extends { id: string }>({
             )}
           </p>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-end sm:self-auto">
             <Button
               variant="outline"
               size="sm"

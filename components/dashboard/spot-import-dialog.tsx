@@ -230,7 +230,7 @@ export function SpotImportDialog({ onSuccess }: { onSuccess?: () => void }) {
               {/* ── JSON mode ── */}
               {mode === "json" && (
                 <div className="flex flex-col gap-4">
-                  <div className="flex items-center justify-between gap-3">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-sm text-muted-foreground">
                       Collez ou chargez un fichier JSON au format{" "}
                       <code className="rounded bg-muted px-1 py-0.5 text-xs">

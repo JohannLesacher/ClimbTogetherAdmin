@@ -185,7 +185,7 @@ export function ScraperTool({ spots }: { spots: SpotOption[] }) {
               placeholder="Rechercher un spot..."
               value={spotSearch}
               onChange={(e) => setSpotSearch(e.target.value)}
-              className="max-w-sm"
+              className="w-full sm:max-w-sm"
             />
             {filteredSpots.length > 0 ? (
               <div className="max-h-48 overflow-y-auto rounded-lg border divide-y">
