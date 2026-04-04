@@ -7,9 +7,8 @@ export default defineConfig({
   test: {
     globals: true,
     // Environnement par défaut : node (routes API, utilitaires)
+    // Les tests de composants utilisent le docblock /** @vitest-environment jsdom */ au niveau fichier
     environment: "node",
-    // Les tests de composants React s'exécutent dans jsdom
-    environmentMatchGlobs: [["tests/e2e/**", "jsdom"]],
     setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.{ts,tsx}"],
     exclude: ["node_modules", ".next"],
