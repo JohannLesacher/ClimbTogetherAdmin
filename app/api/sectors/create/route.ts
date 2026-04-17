@@ -7,6 +7,7 @@ import { requireAdminSession } from "@/lib/session"
 
 const schema = z.object({
   spotId: z.string().min(1),
+  teamId: z.string().min(1),
   data: z.object({
     name: z.string().min(1),
     style: z.array(z.enum(["sport", "trad", "boulder"])).default([]),
@@ -22,13 +23,13 @@ export async function POST(request: Request) {
   if (authError) return authError
 
   try {
-    const { spotId, data } = schema.parse(await request.json())
+    const { spotId, teamId, data } = schema.parse(await request.json())
 
     const spotRef = adminDb.collection("climbingSpots").doc(spotId)
     const sectorRef = spotRef.collection("sectors").doc()
 
     const batch = adminDb.batch()
-    batch.set(sectorRef, { ...data, createdAt: FieldValue.serverTimestamp() })
+    batch.set(sectorRef, { ...data, teamId, createdAt: FieldValue.serverTimestamp() })
     batch.update(spotRef, { sectorCount: FieldValue.increment(1) })
     await batch.commit()
 

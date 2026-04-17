@@ -38,6 +38,7 @@ const spotImportSchema = z.object({
     country: z.string().default(""),
   }),
   styles: z.array(stylesEnum).default([]),
+  teamId: z.string().min(1, "L'équipe est requise"),
   parking: z
     .object({ lat: z.number(), lng: z.number(), note: z.string().optional() })
     .optional(),
@@ -115,6 +116,7 @@ export async function POST(request: Request) {
 
           batch.set(sectorRef, {
             ...sectorFields,
+            teamId: spot.teamId,
             createdAt: toTimestamp(sector.createdAt),
           })
         }

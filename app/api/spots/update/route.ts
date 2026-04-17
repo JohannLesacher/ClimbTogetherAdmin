@@ -21,6 +21,7 @@ const schema = z.object({
       })
       .optional(),
     styles: z.array(stylesEnum).optional(),
+    teamId: z.string().min(1).optional(),
     // null = supprimer le champ parking
     parking: z
       .object({ lat: z.number(), lng: z.number(), note: z.string().optional() })
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
     const spotRef = adminDb.collection("climbingSpots").doc(spotId)
 
     // Construire le payload en gérant parking: null → FieldValue.delete()
-    const { parking, ...rest } = data
+    const { parking, teamId, ...rest } = data
     const payload: Record<string, unknown> = { ...rest }
 
     if (parking === null) {
@@ -49,7 +50,16 @@ export async function POST(request: Request) {
       payload.parking = parking
     }
 
-    await spotRef.update(payload)
+    if (teamId) {
+      // Cascade : mettre à jour teamId sur le spot ET tous ses secteurs atomiquement
+      const sectorsSnap = await spotRef.collection("sectors").get()
+      const batch = adminDb.batch()
+      batch.update(spotRef, { ...payload, teamId })
+      sectorsSnap.docs.forEach((doc) => batch.update(doc.ref, { teamId }))
+      await batch.commit()
+    } else {
+      await spotRef.update(payload)
+    }
 
     revalidateTag("spots", { expire: 0 })
     return NextResponse.json({ ok: true })

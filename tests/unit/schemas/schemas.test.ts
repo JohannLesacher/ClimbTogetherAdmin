@@ -17,6 +17,7 @@ const validSpot = {
   location: { lat: 48.4167, lng: 2.6833, address: "Forêt de Fontainebleau", country: "France" },
   styles: ["boulder" as const],
   sectorCount: 5,
+  teamId: "team-abc",
   addedBy: "admin",
   createdAt: NOW,
 }
@@ -25,6 +26,7 @@ const validSector = {
   name: "Secteur A",
   style: ["sport" as const],
   grades: { min: "5a", max: "7b" },
+  teamId: "team-abc",
   orientation: "S" as const,
   addedBy: "admin",
   createdAt: NOW,

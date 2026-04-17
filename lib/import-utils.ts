@@ -18,6 +18,7 @@ export type FormState = {
   parkingNote: string
   photoUrl: string
   addedBy: string
+  teamId: string
 }
 
 export type ParsedPreview =
@@ -75,6 +76,7 @@ export function buildFormPayload(form: FormState): Record<string, unknown> | nul
         }),
         ...(form.photoUrl && { photoUrl: form.photoUrl }),
         addedBy: form.addedBy || "admin",
+        teamId: form.teamId,
       },
     ],
   }

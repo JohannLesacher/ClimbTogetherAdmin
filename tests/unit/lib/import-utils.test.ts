@@ -104,6 +104,7 @@ const baseForm: FormState = {
   parkingNote: "",
   photoUrl: "",
   addedBy: "admin",
+  teamId: "team-abc",
 }
 
 describe("buildFormPayload", () => {

@@ -1,9 +1,13 @@
 import { getSpotsWithSectors } from "@/lib/data/spots"
+import { getTeamNames } from "@/lib/data/teams"
 import { SpotsTable } from "@/components/dashboard/spots-table"
 import { SpotImportDialog } from "@/components/dashboard/spot-import-dialog"
 
 export default async function SpotsPage() {
-  const spots = await getSpotsWithSectors()
+  const [spots, teams] = await Promise.all([
+    getSpotsWithSectors(),
+    getTeamNames(),
+  ])
 
   return (
     <div className="flex flex-col gap-6">
@@ -15,10 +19,10 @@ export default async function SpotsPage() {
             {spots.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <SpotImportDialog />
+        <SpotImportDialog teams={teams} />
       </div>
 
-      <SpotsTable data={spots} />
+      <SpotsTable data={spots} teams={teams} />
     </div>
   )
 }

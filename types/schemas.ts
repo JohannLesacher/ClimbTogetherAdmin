@@ -39,6 +39,7 @@ export const spotSchema = z.object({
   location: locationSchema,
   styles: z.array(stylesEnum).default([]),
   sectorCount: z.number().default(0),
+  teamId: z.string().min(1),
   parking: z.object({
     lat: z.number(),
     lng: z.number(),
@@ -57,6 +58,7 @@ export const sectorSchema = z.object({
     min: z.string(),
     max: z.string(),
   }),
+  teamId: z.string().min(1),
   description: z.string().optional(),
   orientation: orientationEnum.optional(),
   photoUrl: z.url().nullable().optional(),

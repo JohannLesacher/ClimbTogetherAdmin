@@ -73,6 +73,7 @@ const validSpotPayload = {
       description: "Spot brésilien",
       location: { lat: -3.4, lng: -62.2, address: "Amazonie", country: "Brésil" },
       styles: ["sport"],
+      teamId: "team-abc",
       sectors: [],
     },
   ],

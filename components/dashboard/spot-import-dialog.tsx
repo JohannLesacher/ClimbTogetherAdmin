@@ -25,7 +25,15 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { type FormState, type ParsedPreview, type SpotStyle, parseImportJson, buildFormPayload } from "@/lib/import-utils"
+import type { TeamName } from "@/lib/data/teams"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -53,13 +61,14 @@ const INITIAL_FORM: FormState = {
   parkingNote: "",
   photoUrl: "",
   addedBy: "admin",
+  teamId: "",
 }
 
 // ─── JSON mode ───────────────────────────────────────────────────────────────
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function SpotImportDialog({ onSuccess }: { onSuccess?: () => void }) {
+export function SpotImportDialog({ teams, onSuccess }: { teams: TeamName[]; onSuccess?: () => void }) {
   const router = useRouter()
   const [open, setOpen] = React.useState(false)
   const [mode, setMode] = React.useState<ImportMode>("json")
@@ -158,6 +167,11 @@ export function SpotImportDialog({ onSuccess }: { onSuccess?: () => void }) {
     if (form.styles.length === 0) {
       setStatus("error")
       setErrorMsg("Sélectionnez au moins un style d'escalade.")
+      return
+    }
+    if (!form.teamId) {
+      setStatus("error")
+      setErrorMsg("Sélectionnez une équipe.")
       return
     }
     const payload = buildFormPayload(form)
@@ -351,6 +365,22 @@ export function SpotImportDialog({ onSuccess }: { onSuccess?: () => void }) {
                         value={form.addedBy}
                         onChange={(e) => setFormField("addedBy", e.target.value)}
                       />
+                    </div>
+                    <div className="grid gap-1.5">
+                      <Label htmlFor="import-team">Équipe *</Label>
+                      <Select
+                        value={form.teamId}
+                        onValueChange={(v) => setFormField("teamId", v)}
+                      >
+                        <SelectTrigger id="import-team">
+                          <SelectValue placeholder="Sélectionner une équipe" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {teams.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </fieldset>
 

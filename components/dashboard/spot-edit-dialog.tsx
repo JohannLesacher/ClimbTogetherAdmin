@@ -15,8 +15,16 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { PhotoUploadButton } from "@/components/dashboard/photo-upload-button"
 import type { SpotRow } from "@/lib/data/spots"
+import type { TeamName } from "@/lib/data/teams"
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,12 +40,13 @@ type Props = {
   open: boolean
   onClose: () => void
   spot: SpotRow
+  teams: TeamName[]
   onSaved: () => void
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export function SpotEditDialog({ open, onClose, spot, onSaved }: Props) {
+export function SpotEditDialog({ open, onClose, spot, teams, onSaved }: Props) {
   // Formulaire initialisé avec les données existantes
   const [name, setName] = React.useState(spot.name)
   const [description, setDescription] = React.useState(spot.description)
@@ -46,6 +55,7 @@ export function SpotEditDialog({ open, onClose, spot, onSaved }: Props) {
   const [lat, setLat] = React.useState(String(spot.lat))
   const [lng, setLng] = React.useState(String(spot.lng))
   const [styles, setStyles] = React.useState<SpotStyle[]>(spot.styles as SpotStyle[])
+  const [teamId, setTeamId] = React.useState(spot.teamId)
   const [parkingLat, setParkingLat] = React.useState(String(spot.parking?.lat ?? ""))
   const [parkingLng, setParkingLng] = React.useState(String(spot.parking?.lng ?? ""))
   const [parkingNote, setParkingNote] = React.useState(spot.parking?.note ?? "")
@@ -63,6 +73,7 @@ export function SpotEditDialog({ open, onClose, spot, onSaved }: Props) {
     setLat(String(spot.lat))
     setLng(String(spot.lng))
     setStyles(spot.styles as SpotStyle[])
+    setTeamId(spot.teamId)
     setParkingLat(String(spot.parking?.lat ?? ""))
     setParkingLng(String(spot.parking?.lng ?? ""))
     setParkingNote(spot.parking?.note ?? "")
@@ -84,6 +95,11 @@ export function SpotEditDialog({ open, onClose, spot, onSaved }: Props) {
     const parsedLng = parseFloat(lng)
     if (isNaN(parsedLat) || isNaN(parsedLng)) {
       setError("Les coordonnées GPS doivent être des nombres valides.")
+      return
+    }
+
+    if (!teamId) {
+      setError("L'équipe est requise.")
       return
     }
 
@@ -112,6 +128,7 @@ export function SpotEditDialog({ open, onClose, spot, onSaved }: Props) {
               country: country.trim(),
             },
             styles,
+            teamId,
             // null si le parking a été vidé alors qu'il existait, pour supprimer le champ
             parking: hasParking
               ? { lat: parsedParkingLat, lng: parsedParkingLng, note: parkingNote.trim() || undefined }
@@ -242,6 +259,21 @@ export function SpotEditDialog({ open, onClose, spot, onSaved }: Props) {
               ))}
             </div>
           </fieldset>
+
+          {/* Équipe */}
+          <div className="grid gap-1.5">
+            <Label htmlFor="edit-team">Équipe *</Label>
+            <Select value={teamId} onValueChange={setTeamId}>
+              <SelectTrigger id="edit-team">
+                <SelectValue placeholder="Sélectionner une équipe" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Parking */}
           <fieldset className="flex flex-col gap-3">

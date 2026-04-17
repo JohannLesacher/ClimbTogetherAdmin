@@ -5,8 +5,8 @@ import { adminDb } from "@/lib/firebase-admin"
 import type { ScrapedSpot, ScrapedSector } from "@/lib/scraper/parser"
 import { requireAdminSession } from "@/lib/session"
 
-type ApplySpotBody = { type: "spot"; data: ScrapedSpot }
-type ApplySectorBody = { type: "sector"; spotId: string; data: ScrapedSector }
+type ApplySpotBody = { type: "spot"; teamId: string; data: ScrapedSpot }
+type ApplySectorBody = { type: "sector"; spotId: string; teamId: string; data: ScrapedSector }
 type Body = ApplySpotBody | ApplySectorBody
 
 export async function POST(request: Request) {
@@ -17,10 +17,14 @@ export async function POST(request: Request) {
     const body = (await request.json()) as Body
 
     if (body.type === "spot") {
+      if (!body.teamId) {
+        return NextResponse.json({ error: "teamId requis" }, { status: 400 })
+      }
       const { sectors: _s, ...spotFields } = body.data
       const spotRef = adminDb.collection("climbingSpots").doc()
       await spotRef.set({
         ...spotFields,
+        teamId: body.teamId,
         sectorCount: 0,
         createdAt: FieldValue.serverTimestamp(),
       })
@@ -29,9 +33,12 @@ export async function POST(request: Request) {
     }
 
     if (body.type === "sector") {
-      const { spotId, data } = body
+      const { spotId, teamId, data } = body
       if (!spotId) {
         return NextResponse.json({ error: "spotId requis" }, { status: 400 })
+      }
+      if (!teamId) {
+        return NextResponse.json({ error: "teamId requis" }, { status: 400 })
       }
 
       const spotRef = adminDb.collection("climbingSpots").doc(spotId)
@@ -41,6 +48,7 @@ export async function POST(request: Request) {
       const batch = adminDb.batch()
       batch.set(sectorRef, {
         ...data,
+        teamId,
         createdAt: FieldValue.serverTimestamp(),
       })
       batch.update(spotRef, { sectorCount: FieldValue.increment(1) })

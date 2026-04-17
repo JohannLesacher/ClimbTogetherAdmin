@@ -13,6 +13,7 @@ export type SpotRow = {
   lng: number
   styles: string[]
   sectorCount: number
+  teamId: string
   addedBy: string
   createdAt: number
   parking?: { lat: number; lng: number; note?: string }
@@ -25,6 +26,7 @@ export type SectorRow = {
   description: string
   style: string[]
   grades: { min: string; max: string }
+  teamId: string
   orientation?: string
   photoUrl: string | null
   addedBy: string
@@ -33,7 +35,7 @@ export type SectorRow = {
 
 export type SpotWithSectors = SpotRow & { sectors: SectorRow[] }
 
-export type SpotName = { id: string; name: string }
+export type SpotName = { id: string; name: string; teamId: string }
 
 // TTL de base : 5 minutes. Les mutations appellent revalidateTag("spots") pour
 // invalider immédiatement sans attendre l'expiration.
@@ -61,6 +63,7 @@ const _getSpots = unstable_cache(
         lng: d.location?.lng ?? 0,
         styles: d.styles ?? [],
         sectorCount: d.sectorCount ?? 0,
+        teamId: d.teamId ?? "",
         addedBy: d.addedBy ?? "—",
         createdAt: toMs(d.createdAt),
         parking: d.parking
@@ -102,6 +105,7 @@ const _getSpotsWithSectors = unstable_cache(
         description: sd.description ?? "",
         style: sd.style ?? [],
         grades: sd.grades ?? { min: "", max: "" },
+        teamId: sd.teamId ?? "",
         orientation: sd.orientation,
         photoUrl: sd.photoUrl ?? null,
         addedBy: sd.addedBy ?? "—",
@@ -127,6 +131,7 @@ const _getSpotsWithSectors = unstable_cache(
         lng: d.location?.lng ?? 0,
         styles: d.styles ?? [],
         sectorCount: d.sectorCount ?? 0,
+        teamId: d.teamId ?? "",
         addedBy: d.addedBy ?? "—",
         createdAt: toMs(d.createdAt),
         parking: d.parking
@@ -154,12 +159,13 @@ const _getSpotNames = unstable_cache(
     const snap = await adminDb
       .collection("climbingSpots")
       .orderBy("name")
-      .select("name")
+      .select("name", "teamId")
       .get()
 
     return snap.docs.map((doc) => ({
       id: doc.id,
       name: (doc.data().name as string) ?? doc.id,
+      teamId: (doc.data().teamId as string) ?? "",
     }))
   },
   ["spot-names"],

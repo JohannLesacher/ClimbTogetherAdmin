@@ -26,6 +26,7 @@ import { SectorAddDialog } from "@/components/dashboard/sector-add-dialog"
 import { SpotEditDialog } from "@/components/dashboard/spot-edit-dialog"
 import { SectorEditDialog } from "@/components/dashboard/sector-edit-dialog"
 import type { SpotWithSectors, SectorRow } from "@/lib/data/spots"
+import type { TeamName } from "@/lib/data/teams"
 import { formatDate } from "@/utils/firestore"
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -88,7 +89,11 @@ async function exportSpots(ids: string[]) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
+export function SpotsTable({ data, teams }: { data: SpotWithSectors[]; teams: TeamName[] }) {
+  const teamById = React.useMemo(
+    () => new Map(teams.map((t) => [t.id, t.name])),
+    [teams]
+  )
   const router = useRouter()
 
   // Spot-level selection & expansion
@@ -106,7 +111,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
   const [sectorDeleteError, setSectorDeleteError] = React.useState("")
 
   // Sector add dialog
-  const [addSectorFor, setAddSectorFor] = React.useState<{ id: string; name: string } | null>(null)
+  const [addSectorFor, setAddSectorFor] = React.useState<{ id: string; name: string; teamId: string } | null>(null)
 
   // Edit dialogs
   const [spotEditTarget, setSpotEditTarget] = React.useState<SpotWithSectors | null>(null)
@@ -275,6 +280,9 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
               <th className="p-2 text-left font-medium text-foreground hidden md:table-cell">
                 Localisation
               </th>
+              <th className="p-2 text-left font-medium text-foreground hidden xl:table-cell">
+                Équipe
+              </th>
               <th className="p-2 text-left font-medium text-foreground hidden sm:table-cell">
                 Styles
               </th>
@@ -291,7 +299,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
           <tbody>
             {data.length === 0 && (
               <tr>
-                <td colSpan={8} className="p-8 text-center text-muted-foreground text-sm">
+                <td colSpan={9} className="p-8 text-center text-muted-foreground text-sm">
                   Aucun spot.
                 </td>
               </tr>
@@ -356,6 +364,14 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
                       </div>
                     </td>
 
+                    <td className="p-2 hidden xl:table-cell">
+                      <span className="text-sm text-muted-foreground">
+                        {teamById.get(spot.teamId) ?? (
+                          <span className="font-mono text-xs">{spot.teamId || "—"}</span>
+                        )}
+                      </span>
+                    </td>
+
                     <td className="p-2 hidden sm:table-cell">
                       <StyleBadges styles={spot.styles} />
                     </td>
@@ -385,7 +401,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
                         <tr className="border-b bg-muted/20">
                           <td colSpan={2} />
                           <td
-                            colSpan={6}
+                            colSpan={7}
                             className="px-4 py-2 text-xs text-muted-foreground italic"
                           >
                             Aucun secteur pour ce spot.
@@ -414,6 +430,9 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
                           <td className="p-2 hidden md:table-cell">
                             <StyleBadges styles={sector.style} />
                           </td>
+
+                          {/* Équipe col: empty for sectors */}
+                          <td className="p-2 hidden xl:table-cell" />
 
                           {/* Styles col: style badges (mobile) */}
                           <td className="p-2 hidden sm:table-cell md:hidden">
@@ -466,9 +485,9 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
                       {/* Add sector row */}
                       <tr className="border-b bg-muted/10">
                         <td colSpan={2} />
-                        <td colSpan={6} className="p-2">
+                        <td colSpan={7} className="p-2">
                           <button
-                            onClick={() => setAddSectorFor({ id: spot.id, name: spot.name })}
+                            onClick={() => setAddSectorFor({ id: spot.id, name: spot.name, teamId: spot.teamId })}
                             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors px-1 py-0.5 rounded"
                           >
                             <Plus className="size-3.5" />
@@ -569,6 +588,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
           onClose={() => setAddSectorFor(null)}
           spotId={addSectorFor.id}
           spotName={addSectorFor.name}
+          teamId={addSectorFor.teamId}
           onAdded={() => { setAddSectorFor(null); router.refresh() }}
         />
       )}
@@ -579,6 +599,7 @@ export function SpotsTable({ data }: { data: SpotWithSectors[] }) {
           open={!!spotEditTarget}
           onClose={() => setSpotEditTarget(null)}
           spot={spotEditTarget}
+          teams={teams}
           onSaved={() => { setSpotEditTarget(null); router.refresh() }}
         />
       )}

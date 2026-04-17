@@ -21,6 +21,7 @@ const MOCK_SECTOR_1 = {
     style: ["sport"],
     grades: { min: "5a", max: "7b" },
     orientation: "S",
+    teamId: "team-abc",
     addedBy: "admin",
     createdAt: { seconds: 1700000000, nanoseconds: 0 },
   }),
@@ -32,12 +33,14 @@ const MOCK_SECTOR_2 = {
     name: "Secteur B",
     style: ["boulder"],
     grades: { min: "6a", max: "8a" },
+    orientation: undefined,
+    teamId: "team-abc",
     addedBy: "admin",
     createdAt: { seconds: 1700001000, nanoseconds: 0 },
   }),
 }
 
-function makeSpotDoc(id: string, name: string, sectors: typeof MOCK_SECTOR_1[]) {
+function makeSpotDoc(id: string, name: string, sectors: unknown[]) {
   return {
     id,
     data: () => ({

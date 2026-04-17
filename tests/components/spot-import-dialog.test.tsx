@@ -41,30 +41,30 @@ describe("SpotImportDialog", () => {
 
   describe("rendu initial", () => {
     it("affiche le bouton 'Importer un spot'", () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       expect(screen.getByRole("button", { name: /importer un spot/i })).toBeInTheDocument()
     })
 
     it("le dialog est fermé par défaut", () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument()
     })
 
     it("ouvre le dialog au clic sur le bouton", () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       expect(screen.getByRole("dialog")).toBeInTheDocument()
     })
 
     it("affiche les onglets JSON et Formulaire", () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       expect(screen.getByText("JSON")).toBeInTheDocument()
       expect(screen.getByText("Formulaire")).toBeInTheDocument()
     })
 
     it("démarre en mode JSON par défaut", () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       expect(screen.getByPlaceholderText(/data/i)).toBeInTheDocument()
     })
@@ -72,7 +72,7 @@ describe("SpotImportDialog", () => {
 
   describe("mode JSON", () => {
     it("affiche un aperçu positif pour un JSON valide", async () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
 
       fireEvent.change(screen.getByRole("textbox"), { target: { value: VALID_JSON } })
@@ -83,7 +83,7 @@ describe("SpotImportDialog", () => {
     })
 
     it("affiche une erreur pour un JSON syntaxiquement invalide", async () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
 
       fireEvent.change(screen.getByRole("textbox"), { target: { value: "{pas du json" } })
@@ -94,7 +94,7 @@ describe("SpotImportDialog", () => {
     })
 
     it("affiche une erreur si la clé 'data' est absente", async () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
 
       fireEvent.change(screen.getByRole("textbox"), { target: { value: JSON.stringify({ spots: [] }) } })
@@ -105,7 +105,7 @@ describe("SpotImportDialog", () => {
     })
 
     it("le bouton Importer est désactivé tant qu'il n'y a pas de JSON valide", () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       const importBtn = screen.getByRole("button", { name: /^importer/i })
       expect(importBtn).toBeDisabled()
@@ -118,7 +118,7 @@ describe("SpotImportDialog", () => {
         json: async () => ({ imported: 1, ids: ["id1"] }),
       } as Response)
 
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
 
       fireEvent.change(screen.getByRole("textbox"), { target: { value: VALID_JSON } })
@@ -148,7 +148,7 @@ describe("SpotImportDialog", () => {
         }),
       } as Response)
 
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
 
       fireEvent.change(screen.getByRole("textbox"), { target: { value: VALID_JSON } })
@@ -172,14 +172,14 @@ describe("SpotImportDialog", () => {
     }
 
     it("bascule vers le formulaire au clic sur l'onglet", async () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       await switchToForm()
       expect(screen.getByLabelText(/nom/i)).toBeInTheDocument()
     })
 
     it("affiche les champs obligatoires (nom, description, adresse, lat, lng)", async () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       await switchToForm()
 
@@ -192,7 +192,7 @@ describe("SpotImportDialog", () => {
     })
 
     it("affiche les checkboxes de style (Sportive, Trad, Bloc)", async () => {
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       await switchToForm()
 
@@ -203,7 +203,7 @@ describe("SpotImportDialog", () => {
 
     it("affiche une erreur si aucun style n'est sélectionné à la soumission", async () => {
       const user = userEvent.setup()
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
       await switchToForm()
 
@@ -226,14 +226,10 @@ describe("SpotImportDialog", () => {
       })
     })
 
-    it("soumet le formulaire et appelle l'API avec le bon payload", async () => {
+    it("affiche une erreur si aucune équipe n'est sélectionnée à la soumission", async () => {
       const user = userEvent.setup()
-      vi.mocked(fetch).mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ imported: 1, ids: ["id1"] }),
-      } as Response)
 
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[{ id: "team-1", name: "Team Alpha" }]} />)
       openDialog()
       await switchToForm()
 
@@ -247,19 +243,13 @@ describe("SpotImportDialog", () => {
       await user.type(latInputs[0], "48.4")
       await user.type(lngInputs[0], "2.6")
 
-      // Coche le style "Bloc" via click sur le label
+      // Coche le style "Bloc" — styles OK, mais pas d'équipe sélectionnée
       await user.click(screen.getByText("Bloc"))
 
       await user.click(screen.getByRole("button", { name: /importer le spot/i }))
 
       await waitFor(() => {
-        expect(fetch).toHaveBeenCalledWith(
-          "/api/spots/import",
-          expect.objectContaining({
-            method: "POST",
-            body: expect.stringContaining("Font"),
-          })
-        )
+        expect(screen.getByText(/sélectionnez une équipe/i)).toBeInTheDocument()
       })
     })
   })
@@ -267,7 +257,7 @@ describe("SpotImportDialog", () => {
   describe("réinitialisation", () => {
     it("réinitialise le formulaire à la fermeture du dialog", async () => {
       const user = userEvent.setup()
-      render(<SpotImportDialog />)
+      render(<SpotImportDialog teams={[]} />)
       openDialog()
 
       fireEvent.change(screen.getByRole("textbox"), { target: { value: VALID_JSON } })

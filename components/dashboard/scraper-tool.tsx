@@ -7,9 +7,17 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import type { ScrapedSpot, ScrapedSector } from "@/lib/scraper/parser"
+import type { TeamName } from "@/lib/data/teams"
 
-type SpotOption = { id: string; name: string }
+type SpotOption = { id: string; name: string; teamId: string }
 
 type ParseResponse = {
   spot: ScrapedSpot
@@ -20,13 +28,14 @@ type ParseResponse = {
 
 type Mode = "spot" | "sector"
 
-export function ScraperTool({ spots }: { spots: SpotOption[] }) {
+export function ScraperTool({ spots, teams }: { spots: SpotOption[]; teams: TeamName[] }) {
   const router = useRouter()
 
   const [url, setUrl] = React.useState("")
   const [mode, setMode] = React.useState<Mode>("spot")
   const [spotId, setSpotId] = React.useState("")
   const [spotSearch, setSpotSearch] = React.useState("")
+  const [teamId, setTeamId] = React.useState("")
 
   const [parsed, setParsed] = React.useState<ParseResponse | null>(null)
   const [jsonValue, setJsonValue] = React.useState("")
@@ -41,6 +50,11 @@ export function ScraperTool({ spots }: { spots: SpotOption[] }) {
   const filteredSpots = spots.filter((s) =>
     s.name.toLowerCase().includes(spotSearch.toLowerCase())
   )
+
+  // En mode secteur, le teamId est déduit automatiquement du spot cible
+  const effectiveTeamId = mode === "sector"
+    ? (spots.find((s) => s.id === spotId)?.teamId ?? "")
+    : teamId
 
   // When mode changes after a parse, refresh the JSON editor
   React.useEffect(() => {
@@ -95,12 +109,21 @@ export function ScraperTool({ spots }: { spots: SpotOption[] }) {
       return
     }
 
+    if (!effectiveTeamId) {
+      setImportError(
+        mode === "spot"
+          ? "Sélectionnez une équipe avant d'importer."
+          : "Le spot cible n'a pas d'équipe associée."
+      )
+      return
+    }
+
     setImporting(true)
     try {
       const body =
         mode === "spot"
-          ? { type: "spot", data: parsedJson }
-          : { type: "sector", spotId, data: parsedJson }
+          ? { type: "spot", teamId: effectiveTeamId, data: parsedJson }
+          : { type: "sector", spotId, teamId: effectiveTeamId, data: parsedJson }
 
       const res = await fetch("/api/scraper/apply", {
         method: "POST",
@@ -176,6 +199,23 @@ export function ScraperTool({ spots }: { spots: SpotOption[] }) {
             ))}
           </div>
         </div>
+
+        {/* Team selector (spot mode only — sector mode derives from the selected spot) */}
+        {mode === "spot" && (
+          <div className="flex flex-col gap-1.5">
+            <Label>Équipe</Label>
+            <Select value={teamId} onValueChange={setTeamId}>
+              <SelectTrigger className="w-full sm:max-w-sm">
+                <SelectValue placeholder="Sélectionner une équipe" />
+              </SelectTrigger>
+              <SelectContent>
+                {teams.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
 
         {/* Spot selector (sector mode only) */}
         {mode === "sector" && (

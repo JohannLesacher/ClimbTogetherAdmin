@@ -1,8 +1,12 @@
 import { getSpotNames } from "@/lib/data/spots"
+import { getTeamNames } from "@/lib/data/teams"
 import { ScraperTool } from "@/components/dashboard/scraper-tool"
 
 export default async function ScraperPage() {
-  const spots = await getSpotNames()
+  const [spots, teams] = await Promise.all([
+    getSpotNames(),
+    getTeamNames(),
+  ])
 
   return (
     <div className="flex flex-col gap-6">
@@ -13,7 +17,7 @@ export default async function ScraperPage() {
         </p>
       </div>
 
-      <ScraperTool spots={spots} />
+      <ScraperTool spots={spots} teams={teams} />
     </div>
   )
 }

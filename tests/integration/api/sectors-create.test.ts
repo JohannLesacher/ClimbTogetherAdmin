@@ -54,6 +54,7 @@ function makeRequest(body: unknown) {
 
 const validBody = {
   spotId: "spot-123",
+  teamId: "team-abc",
   data: {
     name: "Secteur A",
     style: ["sport"],
@@ -72,7 +73,8 @@ describe("POST /api/sectors/create", () => {
     // Rétablit les mocks de chaîne après clearAllMocks
     mockSpotRef.collection.mockReturnValue({ doc: vi.fn().mockReturnValue(mockSectorRef) })
     const { adminDb } = await import("@/lib/firebase-admin")
-    vi.mocked(adminDb.batch).mockReturnValue(mockBatch)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(adminDb.batch).mockReturnValue(mockBatch as any)
   })
 
   it("crée un secteur et retourne 201 avec l'id", async () => {

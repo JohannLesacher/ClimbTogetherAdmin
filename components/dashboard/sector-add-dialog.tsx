@@ -35,10 +35,11 @@ type Props = {
   onClose: () => void
   spotId: string
   spotName: string
+  teamId: string
   onAdded: () => void
 }
 
-export function SectorAddDialog({ open, onClose, spotId, spotName, onAdded }: Props) {
+export function SectorAddDialog({ open, onClose, spotId, spotName, teamId, onAdded }: Props) {
   const [name, setName] = React.useState("")
   const [style, setStyle] = React.useState<string[]>([])
   const [gradeMin, setGradeMin] = React.useState("")
@@ -73,6 +74,7 @@ export function SectorAddDialog({ open, onClose, spotId, spotName, onAdded }: Pr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           spotId,
+          teamId,
           data: {
             name: name.trim(),
             style,
